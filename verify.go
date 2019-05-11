@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"cli/style/text"
+	"github.com/pirmd/cli/style/text"
 )
 
 var (

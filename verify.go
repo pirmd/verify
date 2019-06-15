@@ -16,8 +16,8 @@ var (
 	showdiff = flag.Bool("test.diff", false, "show differences between result and expected values")
 )
 
-//Equal verifies that 'got' is equal to 'want' and feedback a test error message
-//with diff information
+//Equal verifies that 'got' is equal to 'want' and feedback a test error
+//message with diff information
 func Equal(tb testing.TB, got, want interface{}, message ...string) {
 	if !reflect.DeepEqual(got, want) {
 		errorf(tb, message...)
@@ -30,8 +30,8 @@ func Equal(tb testing.TB, got, want interface{}, message ...string) {
 	}
 }
 
-//EqualString verifies that 'got' is equal to 'want' and feedback a test error message
-//with a line by line diff between them
+//EqualString verifies that 'got' is equal to 'want' and feedback a test error
+//message with a line by line diff between them
 func EqualString(tb testing.TB, got, want string, message ...string) {
 	if got != want {
 		errorf(tb, message...)
@@ -44,10 +44,10 @@ func EqualString(tb testing.TB, got, want string, message ...string) {
 	}
 }
 
-//EqualAsJson verifies that Json encoding of got is equal to want's one.
-//It is a weak comparison mean but can be useful to compare data structures
-//that relies on interface{} that can have different type but 'similar' content.
-func EqualAsJson(tb testing.TB, got, want interface{}, message ...string) {
+//EqualAsJSON verifies that Json encoding of got is equal to want's one.  It is
+//a weak comparison mean but can be useful to compare data structures that
+//relies on interface{} that can have different type but 'similar' content.
+func EqualAsJSON(tb testing.TB, got, want interface{}, message ...string) {
 	EqualString(tb, stringify(got), stringify(want), message...)
 }
 

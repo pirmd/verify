@@ -25,7 +25,7 @@ func Equal(tb testing.TB, got, want interface{}, message ...string) {
 			dT, dL, dR := text.Diff.Anything(want, got)
 			tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
 		} else {
-			tb.Errorf("\nWant:%#v\nGot :%#v", want, got)
+			tb.Errorf("\nWant:\n%#v\n\nGot :\n%#v", want, got)
 		}
 	}
 }
@@ -39,7 +39,7 @@ func EqualString(tb testing.TB, got, want string, message ...string) {
 			dT, dL, dR := text.Diff.Bylines(want, got)
 			tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
 		} else {
-			tb.Errorf("Want:%s\n\nGot :%s", want, got)
+			tb.Errorf("Want:\n%s\n\nGot :\n%s", want, got)
 		}
 	}
 }

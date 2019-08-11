@@ -123,7 +123,7 @@ func (td *TestField) ShouldNotHaveFile(wanted string, message string) {
 	}
 }
 
-//IOReader returns a simple io.Reader, usefull to mock files
+//IOReader returns a simple io.Reader, useful to mock files
 func IOReader(content string) io.Reader {
 	return bytes.NewBufferString(content)
 }

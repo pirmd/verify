@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 Format is based on [Keep a Changelog] (https://keepachangelog.com/en/1.0.0/).
 Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.html)
 
-## [Unreleased]
+## [0.2.0] - 2019-08-11
+### Added
+- Add a flag to displays differences in colors
 ### Modified
-- [BUG]  Correct a BUG when displaying diff in test results
-- [User] Modified slightly the formatting of error messages in case of tests'
-  errors 
+- Correct a BUG when displaying diff in test results
+- Modified slightly the formatting of error messages in case of tests' errors 
 
 ## [0.1.0] - 2019-05-11
 ### Added

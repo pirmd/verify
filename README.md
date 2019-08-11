@@ -17,6 +17,8 @@ With the package set-up, two additional go tst flags are offered:
     - `-test.update`: updates the golden files with the test result
     - `-test.diff`  : show differences between the test result and the expected
       test result
+    - `-test.colordiff`  : show differences in color between the test result
+      and the expected test result
 
 # CONTRIBUTION
 If you feel like to contribute, just follow github guidelines on

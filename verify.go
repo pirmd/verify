@@ -13,20 +13,15 @@ import (
 )
 
 var (
-	showdiff = flag.Bool("test.diff", false, "show differences between result and expected values")
+	showdiff      = flag.Bool("test.diff", false, "show differences between result and expected values")
+	showcolordiff = flag.Bool("test.colordiff", false, "show differences using colors between result and expected values")
 )
 
 //Equal verifies that 'got' is equal to 'want' and feedback a test error
 //message with diff information
 func Equal(tb testing.TB, got, want interface{}, message ...string) {
 	if !reflect.DeepEqual(got, want) {
-		errorf(tb, message...)
-		if *showdiff {
-			dT, dL, dR := text.Diff.Anything(want, got)
-			tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-		} else {
-			tb.Errorf("\nWant:\n%#v\n\nGot :\n%#v", want, got)
-		}
+		errorfWithDiff(tb, want, got, message...)
 	}
 }
 
@@ -34,13 +29,7 @@ func Equal(tb testing.TB, got, want interface{}, message ...string) {
 //message with a line by line diff between them
 func EqualString(tb testing.TB, got, want string, message ...string) {
 	if got != want {
-		errorf(tb, message...)
-		if *showdiff {
-			dT, dL, dR := text.Diff.Bylines(want, got)
-			tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-		} else {
-			tb.Errorf("Want:\n%s\n\nGot :\n%s", want, got)
-		}
+		errorfWithDiff(tb, want, got, message...)
 	}
 }
 
@@ -79,6 +68,19 @@ func errorf(tb testing.TB, message ...string) {
 		s[i] = m
 	}
 	tb.Errorf(message[0], s...)
+}
+
+func errorfWithDiff(tb testing.TB, want, got interface{}, message ...string) {
+	errorf(tb, message...)
+	if *showdiff {
+		dT, dL, dR := text.Diff.Anything(want, got)
+		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
+	} else if *showcolordiff {
+		dT, dL, dR := text.ColorDiff.Anything(want, got)
+		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
+	} else {
+		tb.Errorf("Want:\n%s\n\nGot :\n%s", want, got)
+	}
 }
 
 func stringify(v interface{}) string {

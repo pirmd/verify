@@ -7,6 +7,10 @@ Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 ### Added
 - Add extended error message definition in MatchGolden
+- Add helpers to capture os.Stdout and compare it to either a string or a
+  golden file
+- Add basic mock http server that alters http.DefaultTransport and replace it
+  to serve locally stored http.Response
 
 ## [0.2.0] - 2019-08-11
 ### Added

@@ -17,7 +17,7 @@ var (
 
 //MatchGolden compares a test result to the content of a 'golden' file
 //If 'update' command flag is used, update the 'golden' file
-func MatchGolden(tb testing.TB, got string, message string) {
+func MatchGolden(tb testing.TB, got string, message ...string) {
 	if *update {
 		updateGolden(tb, []byte(got))
 	}
@@ -28,7 +28,7 @@ func MatchGolden(tb testing.TB, got string, message string) {
 		tb.Fatalf("no existing or empty golden file. Test output is:\n%s", got)
 	}
 
-	EqualString(tb, got, string(expected), message)
+	EqualString(tb, got, string(expected), message...)
 }
 
 func goldenPath(tb testing.TB) string {

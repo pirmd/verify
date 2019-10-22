@@ -9,17 +9,17 @@ import (
 )
 
 var (
-	//Update golden files
-	update = flag.Bool("test.update", false, "update golden file with test result")
-	//where to find golden files
-	golden = flag.String("test.golden", "./testdata", "path to folder hosting golden files")
+	// updateGolden golden files
+	updateGolden = flag.Bool("test.update-golden", false, "update golden file with test result")
+	// where to find golden files
+	goldenDir = flag.String("test.goldendir", "./testdata", "path to folder hosting golden files")
 )
 
-//MatchGolden compares a test result to the content of a 'golden' file
-//If 'update' command flag is used, update the 'golden' file
+// MatchGolden compares a test result to the content of a 'golden' file
+// If 'update' command flag is used, update the 'golden' file
 func MatchGolden(tb testing.TB, got string, message ...string) {
-	if *update {
-		updateGolden(tb, []byte(got))
+	if *updateGolden {
+		updateGoldenFiles(tb, []byte(got))
 	}
 
 	expected := readGolden(tb)
@@ -32,7 +32,7 @@ func MatchGolden(tb testing.TB, got string, message ...string) {
 }
 
 func goldenPath(tb testing.TB) string {
-	return filepath.Join(*golden, tb.Name()+".golden")
+	return filepath.Join(*goldenDir, tb.Name()+".golden")
 }
 
 func readGolden(tb testing.TB) []byte {
@@ -46,7 +46,7 @@ func readGolden(tb testing.TB) []byte {
 	return expected
 }
 
-func updateGolden(tb testing.TB, actual []byte) {
+func updateGoldenFiles(tb testing.TB, actual []byte) {
 	f := goldenPath(tb)
 
 	tb.Logf("update golden file %s", f)

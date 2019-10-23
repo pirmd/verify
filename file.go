@@ -9,14 +9,14 @@ import (
 	"testing"
 )
 
-//TestField represents a temporary folder where testing can happen
+// TestField represents a temporary folder where testing can happen
 type TestField struct {
 	tb   testing.TB
 	Root string
 }
 
-//NewTestField creates a temporary folder to host a test field for tb.  If a
-//temporary test field already exists for tb, it fails.
+// NewTestField creates a temporary folder to host a test field for tb.  If a
+// temporary test field already exists for tb, it fails.
 func NewTestField(tb testing.TB) *TestField {
 	path, err := ioutil.TempDir("", tb.Name())
 	if err != nil {
@@ -26,18 +26,18 @@ func NewTestField(tb testing.TB) *TestField {
 	return &TestField{tb, path}
 }
 
-//Clean removes the temporary test fields created for tb if it exists
+// Clean removes the temporary test fields created for tb if it exists
 func (td *TestField) Clean() {
 	if err := os.RemoveAll(td.Root); err != nil {
 		td.tb.Fatalf("Fail to remove temporary test field: %v", err)
 	}
 }
 
-//Populate populates a temporary testing fields with the given tree The
-//provided list of files should be in the correct order where folders are
-//listed before the files they contain (if any). Any provided path is relative
-//to the temporary testing field root. Any path provided without any extension
-//is interpreted as being a folder.
+// Populate populates a temporary testing fields with the given tree The
+// provided list of files should be in the correct order where folders are
+// listed before the files they contain (if any). Any provided path is relative
+// to the temporary testing field root. Any path provided without any extension
+// is interpreted as being a folder.
 func (td *TestField) Populate(tree []string) {
 	for _, f := range tree {
 		path := td.Fullpath(f)
@@ -57,9 +57,9 @@ func (td *TestField) Populate(tree []string) {
 	}
 }
 
-//List returns the list of files and folders contained in the temporary test
-//field. Returned tree is made of relative path to testing field's root.  Order
-//is fiwed (lexical order as it uses filepath.Walk under the hood)
+// List returns the list of files and folders contained in the temporary test
+// field. Returned tree is made of relative path to testing field's root. Order
+// is the lexical order (as it uses filepath.Walk under the hood).
 func (td *TestField) List() (tree []string) {
 	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -80,14 +80,47 @@ func (td *TestField) List() (tree []string) {
 	return
 }
 
-//Fullpath returns the complete path to the given relative path from the test
-//field root
+// Glob returns the list of files and folders contained in the temporary test
+// field that match the given pattern. Returned tree is made of relative path
+// to testing field's root. Order is the lexical order (as it uses
+// filepath.Walk under the hood).
+func (td *TestField) Glob(pattern string) (tree []string) {
+	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == td.Root {
+			return nil
+		}
+
+		match, err := filepath.Match(pattern, path)
+		if err != nil {
+			return err
+		}
+		if !match {
+			return nil
+		}
+
+		relpath, _ := filepath.Rel(td.Root, path) //Sure that we are not going to fail here
+		tree = append(tree, relpath)
+		return nil
+	})
+
+	if err != nil {
+		td.tb.Fatalf("Fail to list temporary test field: %v", err)
+	}
+
+	return
+}
+
+// Fullpath returns the complete path to the given relative path from the test
+// field root
 func (td *TestField) Fullpath(relpath string) string {
 	return filepath.Join(td.Root, filepath.Clean("/"+relpath))
 }
 
-//Exists check if provided path exists in the test field. The path can be
-//relative to the test field's root.
+// Exists check if provided path exists in the test field. The path can be
+// relative to the test field's root.
 func (td *TestField) Exists(relpath string) bool {
 	path := td.Fullpath(relpath)
 	_, err := os.Stat(path)
@@ -101,13 +134,13 @@ func (td *TestField) Exists(relpath string) bool {
 	return true
 }
 
-//ShouldHaveContent verifies that the temporary test field content corresponds
-//to the wanted tree.
+// ShouldHaveContent verifies that the temporary test field content corresponds
+// to the wanted tree.
 func (td *TestField) ShouldHaveContent(wanted []string, message string) {
 	EqualSliceWithoutOrder(td.tb, td.List(), wanted, message)
 }
 
-//ShouldHaveFile verifies that the wanted file/folder is in the test field
+// ShouldHaveFile verifies that the wanted file/folder is in the test field
 func (td *TestField) ShouldHaveFile(wanted string, message string) {
 	if !td.Exists(wanted) {
 		td.tb.Logf("Test field should contain %s", wanted)
@@ -115,7 +148,7 @@ func (td *TestField) ShouldHaveFile(wanted string, message string) {
 	}
 }
 
-//ShouldNotHaveFile checks that the given files are not in the test field
+// ShouldNotHaveFile checks that the given files are not in the test field
 func (td *TestField) ShouldNotHaveFile(wanted string, message string) {
 	if td.Exists(wanted) {
 		td.tb.Logf("Test field should not contain %s", wanted)
@@ -123,7 +156,7 @@ func (td *TestField) ShouldNotHaveFile(wanted string, message string) {
 	}
 }
 
-//IOReader returns a simple io.Reader, useful to mock files
+// IOReader returns a simple io.Reader, useful to mock files
 func IOReader(content string) io.Reader {
 	return bytes.NewBufferString(content)
 }

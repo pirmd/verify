@@ -36,21 +36,25 @@ func goldenPath(tb testing.TB) string {
 }
 
 func readGolden(tb testing.TB) []byte {
-	f := goldenPath(tb)
+	path := goldenPath(tb)
 
-	expected, err := ioutil.ReadFile(f)
+	expected, err := ioutil.ReadFile(path)
 	if err != nil {
-		tb.Logf("cannot read golden file %s: %v", f, err)
+		tb.Logf("cannot read golden file %s: %v", path, err)
 		return []byte{}
 	}
 	return expected
 }
 
 func updateGoldenFiles(tb testing.TB, actual []byte) {
-	f := goldenPath(tb)
+	path := goldenPath(tb)
 
-	tb.Logf("update golden file %s", f)
-	if err := ioutil.WriteFile(f, actual, os.ModePerm); err != nil {
-		tb.Fatalf("cannot update golden file %s: %v", f, err)
+	tb.Logf("update golden file %s", path)
+	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
+		tb.Fatalf("cannot update golden file %s: %v", path, err)
+	}
+
+	if err := ioutil.WriteFile(path, actual, 0666); err != nil {
+		tb.Fatalf("cannot update golden file %s: %v", path, err)
 	}
 }

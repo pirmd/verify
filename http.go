@@ -13,7 +13,7 @@ import (
 
 var (
 	// updateMockHTTP updates the http.Response files provided through MockHTTPResponse
-	updateMockHTTP = flag.Bool("test.update-mockhttp", false, "update files served through the mock http transport")
+	updateMockHTTP = flag.Bool("test.mockhttp-update", false, "update files served through the mock http transport")
 	// where to find http.Response files
 	mockHTTPDir = flag.String("test.mockhttpdir", "./testdata", "path to folder hosting golden files")
 )

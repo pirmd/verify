@@ -10,7 +10,7 @@ import (
 
 var (
 	// updateGolden golden files
-	updateGolden = flag.Bool("test.update-golden", false, "update golden file with test result")
+	updateGolden = flag.Bool("test.golden-update", false, "update golden file with test result")
 	// where to find golden files
 	goldenDir = flag.String("test.goldendir", "./testdata", "path to folder hosting golden files")
 )

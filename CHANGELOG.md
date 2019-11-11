@@ -8,10 +8,14 @@ Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.htm
 ### Added
 - Add extended error message definition in MatchGolden
 - Add function to list all files matching a pattern from a TestField
+- Add ListWithExt function to TestField
 - Add helpers to capture os.Stdout and compare it to either a string or a
   golden file
 - Add basic mock http server that alters http.DefaultTransport and replace it
   to serve locally stored http.Response
+### Modified
+- Change comparison functions to always expect 'got' and 'want' arguments in
+  the same order
 
 
 ## [0.2.0] - 2019-08-11

@@ -93,11 +93,41 @@ func (td *TestField) Glob(pattern string) (tree []string) {
 			return nil
 		}
 
-		match, err := filepath.Match(pattern, path)
+		relpath, _ := filepath.Rel(td.Root, path) //Sure that we are not going to fail here
+
+		match, err := filepath.Match(pattern, relpath)
 		if err != nil {
 			return err
 		}
 		if !match {
+			return nil
+		}
+
+		tree = append(tree, relpath)
+		return nil
+	})
+
+	if err != nil {
+		td.tb.Fatalf("Fail to list temporary test field: %v", err)
+	}
+
+	return
+}
+
+// ListWithExt returns the list of files contained in the temporary test field
+// whose extension match the given pattern.  Returned tree is made of relative
+// path to testing field's root. Order is the lexical order (as it uses
+// filepath.Walk under the hood).
+func (td *TestField) ListWithExt(ext string) (tree []string) {
+	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == td.Root {
+			return nil
+		}
+
+		if filepath.Ext(path) != ext {
 			return nil
 		}
 

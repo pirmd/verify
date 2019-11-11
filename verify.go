@@ -21,7 +21,7 @@ var (
 //message with diff information
 func Equal(tb testing.TB, got, want interface{}, message ...string) {
 	if !reflect.DeepEqual(got, want) {
-		errorfWithDiff(tb, want, got, message...)
+		errorfWithDiff(tb, got, want, message...)
 	}
 }
 
@@ -29,7 +29,7 @@ func Equal(tb testing.TB, got, want interface{}, message ...string) {
 //message with a line by line diff between them
 func EqualString(tb testing.TB, got, want string, message ...string) {
 	if got != want {
-		errorfWithDiff(tb, want, got, message...)
+		errorfWithDiff(tb, got, want, message...)
 	}
 }
 
@@ -45,7 +45,7 @@ func EqualAsJSON(tb testing.TB, got, want interface{}, message ...string) {
 func EqualSliceWithoutOrder(tb testing.TB, got, want []string, message ...string) {
 	sort.Strings(got)
 	sort.Strings(want)
-	EqualString(tb, strings.Join(want, "\n"), strings.Join(got, "\n"), message...)
+	EqualString(tb, strings.Join(got, "\n"), strings.Join(want, "\n"), message...)
 }
 
 //Panic verifies that the given func will panic when run
@@ -70,7 +70,7 @@ func errorf(tb testing.TB, message ...string) {
 	tb.Errorf(message[0], s...)
 }
 
-func errorfWithDiff(tb testing.TB, want, got interface{}, message ...string) {
+func errorfWithDiff(tb testing.TB, got, want interface{}, message ...string) {
 	errorf(tb, message...)
 	if *showdiff {
 		dT, dL, dR := text.Diff.Anything(want, got)

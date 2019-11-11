@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 Format is based on [Keep a Changelog] (https://keepachangelog.com/en/1.0.0/).
 Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.html)
 
-## [Unreleased]
+## [0.3.0] - 2019-11-11
 ### Added
 - Add extended error message definition in MatchGolden
 - Add function to list all files matching a pattern from a TestField

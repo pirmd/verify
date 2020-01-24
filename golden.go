@@ -2,10 +2,10 @@ package verify
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 var (
@@ -17,44 +17,43 @@ var (
 
 // MatchGolden compares a test result to the content of a 'golden' file
 // If 'update' command flag is used, update the 'golden' file
-func MatchGolden(tb testing.TB, got string, message ...string) {
+func MatchGolden(name string, got string) error {
+	goldenPath := filepath.Join(*goldenDir, name+".golden")
+
 	if *updateGolden {
-		updateGoldenFiles(tb, []byte(got))
+		if err := updateGoldenFiles(goldenPath, []byte(got)); err != nil {
+			return err
+		}
 	}
 
-	expected := readGolden(tb)
+	expected, err := readGolden(goldenPath)
+	if err != nil {
+		return err
+	}
 
 	if len(expected) == 0 {
-		tb.Fatalf("no existing or empty golden file. Test output is:\n%s", got)
+		return fmt.Errorf("no existing or empty golden file.\nTest output is:\n%s", got)
 	}
 
-	EqualString(tb, got, string(expected), message...)
+	return Equal(got, string(expected))
 }
 
-func goldenPath(tb testing.TB) string {
-	return filepath.Join(*goldenDir, tb.Name()+".golden")
-}
-
-func readGolden(tb testing.TB) []byte {
-	path := goldenPath(tb)
-
+func readGolden(path string) ([]byte, error) {
 	expected, err := ioutil.ReadFile(path)
 	if err != nil {
-		tb.Logf("cannot read golden file %s: %v", path, err)
-		return []byte{}
+		return []byte{}, fmt.Errorf("cannot read golden file %s: %v", path, err)
 	}
-	return expected
+	return expected, nil
 }
 
-func updateGoldenFiles(tb testing.TB, actual []byte) {
-	path := goldenPath(tb)
-
-	tb.Logf("update golden file %s", path)
+func updateGoldenFiles(path string, actual []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
-		tb.Fatalf("cannot update golden file %s: %v", path, err)
+		return fmt.Errorf("cannot update golden file %s: %v", path, err)
 	}
 
 	if err := ioutil.WriteFile(path, actual, 0666); err != nil {
-		tb.Fatalf("cannot update golden file %s: %v", path, err)
+		return fmt.Errorf("cannot update golden file %s: %v", path, err)
 	}
+
+	return nil
 }

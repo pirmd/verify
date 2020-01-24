@@ -3,12 +3,12 @@ package verify
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 var (
@@ -27,19 +27,16 @@ var (
 // url as filename, an empty http.Response if no corresponding file exists.
 type MockHTTPResponse struct {
 	origTransport http.RoundTripper
-	tb            testing.TB
 }
 
 // NewMockHTTPResponse creates a new MockHTTPResponse.
-func NewMockHTTPResponse(tb testing.TB) *MockHTTPResponse {
-	return &MockHTTPResponse{
-		tb: tb,
-	}
+func NewMockHTTPResponse() *MockHTTPResponse {
+	return &MockHTTPResponse{}
 }
 
 // StartMockHTTPResponse creates a new MockHTTPResponse and starts it.
-func StartMockHTTPResponse(tb testing.TB) *MockHTTPResponse {
-	m := NewMockHTTPResponse(tb)
+func StartMockHTTPResponse() *MockHTTPResponse {
+	m := NewMockHTTPResponse()
 	m.Start()
 	return m
 }
@@ -60,15 +57,13 @@ func (m *MockHTTPResponse) Stop() {
 func (m *MockHTTPResponse) RoundTrip(req *http.Request) (*http.Response, error) {
 	if *updateMockHTTP {
 		if err := m.updateResponsesFiles(req); err != nil {
-			m.tb.Logf("fail to update mock http response file (in %s): %v", m.pathFor(req), err)
-			return nil, err
+			return nil, fmt.Errorf("fail to update mock http response file (in %s): %v", m.pathFor(req), err)
 		}
-		m.tb.Logf("update mock http response file (in %s)", m.pathFor(req))
 	}
 
 	resp, err := m.respondFromFiles(req)
 	if err != nil {
-		m.tb.Logf("fail to mock http response (for %s): %v", req.URL, err)
+		return nil, fmt.Errorf("fail to mock http response (for %s): %v", req.URL, err)
 	}
 
 	return resp, err

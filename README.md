@@ -15,14 +15,16 @@ Everything should work fine using go standard commands (`build`, `get`,
 
 # USAGE
 Running `go doc github.com/pirmd/verify` should give you helpful guidelines on
-avail bales features.
+availables features.
 
 With the package set-up, additional go test flags are offered:
     . `-test.golden-update`: updates the golden files with the test result.
     . `-test.mockhttp-update`: updates files served through the mock-http transport.
     . `-test.diff`: show differences between the test result and expected values.
-    . `-test.colordiff`: show differences in color between the test result and the
+    . `-test.diff-color`: show differences in color between the test result and the
        expected values.
+    . `-test.diff-np`: show differences between result and expected values
+      materializing non printable chars.
 
 # CONTRIBUTION
 If you feel like to contribute, just follow github guidelines on

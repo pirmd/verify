@@ -1,101 +1,46 @@
 package verify
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"reflect"
-	"sort"
-	"strings"
-	"testing"
 
-	"github.com/pirmd/cli/style/text"
+	"github.com/sanity-io/litter"
+
+	"github.com/pirmd/text"
+	"github.com/pirmd/text/diff"
 )
 
 var (
 	showdiff      = flag.Bool("test.diff", false, "show differences between result and expected values")
 	showdiffcolor = flag.Bool("test.diff-color", false, "show differences using colors between result and expected values")
-    showdiffNP    = flag.Bool("test.diff-np", false, "show differences between result and expected values materializing non printable chars")
+	showdiffNP    = flag.Bool("test.diff-np", false, "show differences between result and expected values materializing non printable chars")
 )
 
-//Equal verifies that 'got' is equal to 'want' and feedback a test error
-//message with diff information
-func Equal(tb testing.TB, got, want interface{}, message ...string) {
-	if !reflect.DeepEqual(got, want) {
-		errorfWithDiff(tb, got, want, message...)
-	}
-}
+func msgWithDiff(got, want interface{}) string {
+	g, w := stringify(got), stringify(want)
 
-//EqualString verifies that 'got' is equal to 'want' and feedback a test error
-//message with a line by line diff between them
-func EqualString(tb testing.TB, got, want string, message ...string) {
-	if got != want {
-		errorfWithDiff(tb, got, want, message...)
-	}
-}
+	if *showdiff || *showdiffcolor || *showdiffNP {
+		delta := diff.Patience(w, g, diff.ByLines, diff.ByRunes)
 
-//EqualAsJSON verifies that Json encoding of got is equal to want's one.  It is
-//a weak comparison mean but can be useful to compare data structures that
-//relies on interface{} that can have different type but 'similar' content.
-func EqualAsJSON(tb testing.TB, got, want interface{}, message ...string) {
-	EqualString(tb, stringify(got), stringify(want), message...)
-}
-
-//EqualSliceWithoutOrder verifies that two slices of strings are equal whatever
-//the order of their content is
-func EqualSliceWithoutOrder(tb testing.TB, got, want []string, message ...string) {
-	sort.Strings(got)
-	sort.Strings(want)
-	EqualString(tb, strings.Join(got, "\n"), strings.Join(want, "\n"), message...)
-}
-
-//Panic verifies that the given func will panic when run
-func Panic(tb testing.TB, f func(), message ...string) {
-	defer func() {
-		if r := recover(); r == nil {
-			errorf(tb, message...)
+		h := []diff.Highlighter{}
+		if *showdiff {
+			h = []diff.Highlighter{diff.WithSoftTabs}
 		}
-	}()
-	f()
-}
+		if *showdiffcolor {
+			h = []diff.Highlighter{diff.WithSoftTabs, diff.WithColor}
+		}
+		if *showdiffNP {
+			h = append([]diff.Highlighter{diff.WithNonPrintable}, h...)
+		}
 
-func errorf(tb testing.TB, message ...string) {
-	if len(message) == 0 {
-		tb.Fail()
+		dL, dR, dT := delta.PrettyPrint(h...)
+		//XXX:return text.NewTable().Col(dR, dT, dL).Captions("Got", "", "Want").Draw()
+		return text.NewTable().Rows([]string{dL, dT, dR}).Captions("Got", "", "Want").Draw()
 	}
 
-	s := make([]interface{}, len(message)-1)
-	for i, m := range message[1:] {
-		s[i] = m
-	}
-	tb.Errorf(message[0], s...)
-}
-
-func errorfWithDiff(tb testing.TB, got, want interface{}, message ...string) {
-	errorf(tb, message...)
-    switch {
-    case *showdiff:
-		dT, dL, dR := text.Diff.Anything(want, got)
-		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-
-    case *showdiffcolor:
-		dT, dL, dR := text.ColorDiff.Anything(want, got)
-		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-
-    case *showdiffNP:
-        dT, dL, dR := text.DiffShowNonPrintable.Anything(want, got)
-        tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-
-    default:
-		tb.Errorf("Want:\n%v\n\nGot :\n%v", want, got)
-	}
+	return fmt.Sprintf("Got:\n%v\n\nWant :\n%v", g, w)
 }
 
 func stringify(v interface{}) string {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return fmt.Sprintf("%+v", v)
-	}
-
-	return string(b)
+	return litter.Sdump(v)
 }

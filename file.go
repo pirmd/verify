@@ -2,98 +2,129 @@ package verify
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"testing"
 )
 
-// TestField represents a temporary folder where testing can happen
-type TestField struct {
-	tb   testing.TB
+// MockROFile returns a simple io.Reader to mock a read-only file
+func MockROFile(content string) io.Reader {
+	return bytes.NewBufferString(content)
+}
+
+// FileExists checks if provided path exists.
+func FileExists(path string) error {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return errors.New(path + " does not exist")
+	}
+	if err != nil {
+		return fmt.Errorf("cannot stat '%s': %s", path, err)
+	}
+	return nil
+}
+
+// FileDoesNotExist checks if provided path does not exist.
+func FileDoesNotExist(path string) error {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("cannot stat '%s': %s", path, err)
+	}
+	return errors.New(path + " does exist (but should not)")
+}
+
+// DirHasContent checks that the given dir contains the provided tree. Tree
+// should be relative to root.
+func DirHasContent(root string, tree []string) error {
+	ls, err := lsDir(root)
+	if err != nil {
+		return err
+	}
+
+	return EqualSliceWithoutOrder(ls, tree)
+}
+
+// TestFolder represents a temporary folder where testing can happen
+type TestFolder struct {
 	Root string
 }
 
-// NewTestField creates a temporary folder to host a test field for tb.  If a
-// temporary test field already exists for tb, it fails.
-func NewTestField(tb testing.TB) *TestField {
-	path, err := ioutil.TempDir("", tb.Name())
+// NewTestFolder creates a temporary folder to host a test folder for tb.
+func NewTestFolder(name string) (*TestFolder, error) {
+	path, err := ioutil.TempDir("", name)
 	if err != nil {
-		tb.Fatalf("Cannot create temporary test field: %v", err)
+		return nil, fmt.Errorf("cannot create temporary test folder: %v", err)
 	}
 
-	return &TestField{tb, path}
+	return &TestFolder{Root: path}, nil
 }
 
-// Clean removes the temporary test fields created for tb if it exists
-func (td *TestField) Clean() {
-	if err := os.RemoveAll(td.Root); err != nil {
-		td.tb.Fatalf("Fail to remove temporary test field: %v", err)
+// Clean removes the temporary test folders created for tb if it exists
+func (tmp *TestFolder) Clean() error {
+	if err := os.RemoveAll(tmp.Root); err != nil {
+		return fmt.Errorf("fail to remove temporary test folder %s: %v", tmp, err)
 	}
+	return nil
 }
 
-// Populate populates a temporary testing fields with the given tree The
+// Populate populates a temporary testing folders with the given tree The
 // provided list of files should be in the correct order where folders are
 // listed before the files they contain (if any). Any provided path is relative
-// to the temporary testing field root. Any path provided without any extension
+// to the temporary testing folder root. Any path provided without any extension
 // is interpreted as being a folder.
-func (td *TestField) Populate(tree []string) {
+func (tmp *TestFolder) Populate(tree []string) error {
 	for _, f := range tree {
-		path := td.Fullpath(f)
+		path := tmp.Fullpath(f)
 		if filepath.Ext(path) == "" {
 			if err := os.MkdirAll(path, 0777); err != nil {
-				td.tb.Fatalf("Fail to create temporary folder (path %s): %v", f, err)
+				return fmt.Errorf("fail to create temporary folder (path %s): %v", f, err)
 			}
 		} else {
 			if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
-				td.tb.Fatalf("Fail to create file %s: %v", path, err)
+				return fmt.Errorf("fail to create file %s: %v", path, err)
 			}
 
 			if _, err := os.Create(path); err != nil {
-				td.tb.Fatalf("Fail to create temporary file (path %s): %v", f, err)
+				return fmt.Errorf("fail to create temporary file (path %s): %v", f, err)
 			}
 		}
 	}
+
+	return nil
 }
 
 // List returns the list of files and folders contained in the temporary test
-// field. Returned tree is made of relative path to testing field's root. Order
+// folder. Returned tree is made of relative path to testing folder's root. Order
 // is the lexical order (as it uses filepath.Walk under the hood).
-func (td *TestField) List() (tree []string) {
-	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if path == td.Root {
-			return nil
-		}
-		relpath, _ := filepath.Rel(td.Root, path) //Sure that we are not going to fail here
-		tree = append(tree, relpath)
-		return nil
-	})
-
+func (tmp *TestFolder) List() ([]string, error) {
+	ls, err := lsDir(tmp.Root)
 	if err != nil {
-		td.tb.Fatalf("Fail to list temporary test field: %v", err)
+		return nil, fmt.Errorf("fail to list temporary test folder: %v", err)
 	}
 
-	return
+	return ls, nil
 }
 
 // Glob returns the list of files and folders contained in the temporary test
-// field that match the given pattern. Returned tree is made of relative path
-// to testing field's root. Order is the lexical order (as it uses
+// folder that match the given pattern. Returned tree is made of relative path
+// to testing folder's root. Order is the lexical order (as it uses
 // filepath.Walk under the hood).
-func (td *TestField) Glob(pattern string) (tree []string) {
-	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
+func (tmp *TestFolder) Glob(pattern string) (tree []string, err error) {
+	err = filepath.Walk(tmp.Root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if path == td.Root {
+		if path == tmp.Root {
 			return nil
 		}
 
-		relpath, _ := filepath.Rel(td.Root, path) //Sure that we are not going to fail here
+		relpath, _ := filepath.Rel(tmp.Root, path) //Sure that we are not going to fail here
 
 		match, err := filepath.Match(pattern, relpath)
 		if err != nil {
@@ -108,22 +139,22 @@ func (td *TestField) Glob(pattern string) (tree []string) {
 	})
 
 	if err != nil {
-		td.tb.Fatalf("Fail to list temporary test field: %v", err)
+		return nil, fmt.Errorf("fail to list temporary test folder (path %s): %v", tmp.Root, err)
 	}
 
 	return
 }
 
-// ListWithExt returns the list of files contained in the temporary test field
+// ListWithExt returns the list of files contained in the temporary test folder
 // whose extension match the given pattern.  Returned tree is made of relative
-// path to testing field's root. Order is the lexical order (as it uses
+// path to testing folder's root. Order is the lexical order (as it uses
 // filepath.Walk under the hood).
-func (td *TestField) ListWithExt(ext string) (tree []string) {
-	err := filepath.Walk(td.Root, func(path string, info os.FileInfo, err error) error {
+func (tmp *TestFolder) ListWithExt(ext string) (tree []string, err error) {
+	err = filepath.Walk(tmp.Root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if path == td.Root {
+		if path == tmp.Root {
 			return nil
 		}
 
@@ -131,62 +162,55 @@ func (td *TestField) ListWithExt(ext string) (tree []string) {
 			return nil
 		}
 
-		relpath, _ := filepath.Rel(td.Root, path) //Sure that we are not going to fail here
+		relpath, _ := filepath.Rel(tmp.Root, path) //Sure that we are not going to fail here
 		tree = append(tree, relpath)
 		return nil
 	})
 
 	if err != nil {
-		td.tb.Fatalf("Fail to list temporary test field: %v", err)
+		return nil, fmt.Errorf("fail to list temporary test folder (path %s): %v", tmp.Root, err)
 	}
 
 	return
 }
 
 // Fullpath returns the complete path to the given relative path from the test
-// field root
-func (td *TestField) Fullpath(relpath string) string {
-	return filepath.Join(td.Root, filepath.Clean("/"+relpath))
+// folder root
+func (tmp *TestFolder) Fullpath(relpath string) string {
+	return filepath.Join(tmp.Root, filepath.Clean("/"+relpath))
 }
 
-// Exists check if provided path exists in the test field. The path can be
-// relative to the test field's root.
-func (td *TestField) Exists(relpath string) bool {
-	path := td.Fullpath(relpath)
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
-	}
-	if err != nil {
-		td.tb.Errorf("Cannot stat '%s': %s", path, err)
-		return false
-	}
-	return true
+// ShouldHaveFile check if provided path exists in the test folder. The path can be
+// relative to the test folder's root.
+func (tmp *TestFolder) ShouldHaveFile(relpath string) error {
+	path := tmp.Fullpath(relpath)
+	return FileExists(path)
 }
 
-// ShouldHaveContent verifies that the temporary test field content corresponds
+// ShouldNotHaveFile checks that the given files are not in the test folder
+func (tmp *TestFolder) ShouldNotHaveFile(wanted string) error {
+	path := tmp.Fullpath(wanted)
+	return FileDoesNotExist(path)
+}
+
+// ShouldHaveContent verifies that the temporary test folder content corresponds
 // to the wanted tree.
-func (td *TestField) ShouldHaveContent(wanted []string, message string) {
-	EqualSliceWithoutOrder(td.tb, td.List(), wanted, message)
+func (tmp *TestFolder) ShouldHaveContent(wanted []string) error {
+	return DirHasContent(tmp.Root, wanted)
 }
 
-// ShouldHaveFile verifies that the wanted file/folder is in the test field
-func (td *TestField) ShouldHaveFile(wanted string, message string) {
-	if !td.Exists(wanted) {
-		td.tb.Logf("Test field should contain %s", wanted)
-		td.tb.Error(message)
-	}
-}
+func lsDir(root string) (tree []string, err error) {
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == root {
+			return nil
+		}
+		relpath, _ := filepath.Rel(root, path) //Sure that we are not going to fail here
+		tree = append(tree, relpath)
+		return nil
+	})
 
-// ShouldNotHaveFile checks that the given files are not in the test field
-func (td *TestField) ShouldNotHaveFile(wanted string, message string) {
-	if td.Exists(wanted) {
-		td.tb.Logf("Test field should not contain %s", wanted)
-		td.tb.Error(message)
-	}
-}
-
-// IOReader returns a simple io.Reader, useful to mock files
-func IOReader(content string) io.Reader {
-	return bytes.NewBufferString(content)
+	return
 }

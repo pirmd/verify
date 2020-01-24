@@ -2,9 +2,9 @@ package verify
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
-	"testing"
 )
 
 // MockStdout is an helper to capture output to Stdout.
@@ -25,19 +25,21 @@ func NewMockStdout() *MockStdout {
 
 // StartMockStdout creates a new record session of os.Sdtout and start capture
 // operation.
-func StartMockStdout(tb testing.TB) *MockStdout {
+func StartMockStdout() (*MockStdout, error) {
 	out := NewMockStdout()
-	out.Start(tb)
-	return out
+	if err := out.Start(); err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // Start starts capturing os.Stdout.
-func (out *MockStdout) Start(tb testing.TB) {
+func (out *MockStdout) Start() error {
 	var err error
 
 	out.r, out.w, err = os.Pipe()
 	if err != nil {
-		tb.Fatalf("fail to capture Stdout: %v", err)
+		return fmt.Errorf("fail to capture Stdout: %v", err)
 	}
 
 	os.Stdout = out.w
@@ -47,6 +49,8 @@ func (out *MockStdout) Start(tb testing.TB) {
 		io.Copy(&buf, out.r)
 		out.captured <- buf.String()
 	}()
+
+	return nil
 }
 
 // Stop terminates a os.Stdout's recording session and restore os.Stdout to its
@@ -65,12 +69,12 @@ func (out *MockStdout) String() string {
 
 // EqualStdoutString verifies that captured os.Stdout is equal to 'want' and
 // feedback a test error message with a line by line diff between them
-func EqualStdoutString(tb testing.TB, got *MockStdout, want string, message ...string) {
-	EqualString(tb, got.String(), want, message...)
+func EqualStdoutString(got *MockStdout, want string) error {
+	return Equal(got.String(), want)
 }
 
 // MatchStdoutGolden compares captured os.Stdout to the content of a 'golden'
 // file If 'update' command flag is used, update the 'golden' file
-func MatchStdoutGolden(tb testing.TB, got *MockStdout, message ...string) {
-	MatchGolden(tb, got.String(), message...)
+func MatchStdoutGolden(name string, got *MockStdout) error {
+	return MatchGolden(name, got.String())
 }

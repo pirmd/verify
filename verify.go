@@ -14,7 +14,8 @@ import (
 
 var (
 	showdiff      = flag.Bool("test.diff", false, "show differences between result and expected values")
-	showcolordiff = flag.Bool("test.colordiff", false, "show differences using colors between result and expected values")
+	showdiffcolor = flag.Bool("test.diff-color", false, "show differences using colors between result and expected values")
+    showdiffNP    = flag.Bool("test.diff-np", false, "show differences between result and expected values materializing non printable chars")
 )
 
 //Equal verifies that 'got' is equal to 'want' and feedback a test error
@@ -72,14 +73,21 @@ func errorf(tb testing.TB, message ...string) {
 
 func errorfWithDiff(tb testing.TB, got, want interface{}, message ...string) {
 	errorf(tb, message...)
-	if *showdiff {
+    switch {
+    case *showdiff:
 		dT, dL, dR := text.Diff.Anything(want, got)
 		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-	} else if *showcolordiff {
+
+    case *showdiffcolor:
 		dT, dL, dR := text.ColorDiff.Anything(want, got)
 		tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
-	} else {
-		tb.Errorf("Want:\n%s\n\nGot :\n%s", want, got)
+
+    case *showdiffNP:
+        dT, dL, dR := text.DiffShowNonPrintable.Anything(want, got)
+        tb.Errorf("\n%s", text.NewTable().Col(dL, dT, dR).Captions("Want", "", "Got"))
+
+    default:
+		tb.Errorf("Want:\n%v\n\nGot :\n%v", want, got)
 	}
 }
 

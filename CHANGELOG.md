@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 Format is based on [Keep a Changelog] (https://keepachangelog.com/en/1.0.0/).
 Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.html)
 
-## [Unrelease]
+## [0.4.0] - 2020-02-16
 ### Modified
 - Break previous principles for verify functions. Verify functions are now
   outputting errors in case of check fail and leave the end user the choice on

@@ -33,9 +33,8 @@ func msgWithDiff(got, want interface{}) string {
 			h = append([]diff.Highlighter{diff.WithNonPrintable}, h...)
 		}
 
-		dL, dR, dT := delta.PrettyPrint(h...)
-		//XXX:return text.NewTable().Col(dR, dT, dL).Captions("Got", "", "Want").Draw()
-		return text.NewTable().Rows([]string{dL, dT, dR}).Captions("Got", "", "Want").Draw()
+		dL, dR, dT, _ := delta.PrettyPrint(h...)
+		return text.NewTable().Col(dR, dT, dL).Captions("Got", "", "Want").Draw()
 	}
 
 	return fmt.Sprintf("Got:\n%v\n\nWant :\n%v", g, w)

@@ -26,24 +26,24 @@ func MatchGolden(name string, got string) error {
 		}
 	}
 
-	expected, err := readGolden(goldenPath)
+	want, err := readGolden(goldenPath)
 	if err != nil {
 		return err
 	}
 
-	if len(expected) == 0 {
+	if len(want) == 0 {
 		return fmt.Errorf("no existing or empty golden file.\nTest output is:\n%s", got)
 	}
 
-	return Equal(got, string(expected))
+	return Equal(got, string(want))
 }
 
 func readGolden(path string) ([]byte, error) {
-	expected, err := ioutil.ReadFile(path)
+	want, err := ioutil.ReadFile(path)
 	if err != nil {
 		return []byte{}, fmt.Errorf("cannot read golden file %s: %v", path, err)
 	}
-	return expected, nil
+	return want, nil
 }
 
 func updateGoldenFiles(path string, actual []byte) error {

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 Format is based on [Keep a Changelog] (https://keepachangelog.com/en/1.0.0/).
 Versionning adheres to [Semantic Versioning] (https://semver.org/spec/v2.0.0.html)
 
+## [0.4.1] - 2020-02-17
+### Modified
+- FIX an unwanted behavior following introduction of
+  github.com/sanity-io/litter as stringifier wher all strings where quoted
+  using strconv.Quote. It is not the behavior I expecte in most cases, bipass it
+  as a short term wrokaround.
+
 ## [0.4.0] - 2020-02-16
 ### Modified
 - Break previous principles for verify functions. Verify functions are now

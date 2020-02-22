@@ -41,5 +41,11 @@ func msgWithDiff(got, want interface{}) string {
 }
 
 func stringify(v interface{}) string {
+	//TODO(pirmd): github.com/sanity-io/litter use strconv.Quote on each
+	//string, which is not what I usually look for so I bypass it for strings.
+	//Find something more sensible (using options?)
+	if s, ok := v.(string); ok {
+		return s
+	}
 	return litter.Sdump(v)
 }

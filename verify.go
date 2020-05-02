@@ -3,6 +3,7 @@ package verify
 import (
 	"flag"
 	"fmt"
+	"strconv"
 
 	"github.com/sanity-io/litter"
 
@@ -24,7 +25,7 @@ func msgWithDiff(got, want interface{}) string {
 
 		h := []diff.Highlighter{}
 		if *showdiff {
-			h = []diff.Highlighter{diff.WithSoftTabs}
+			h = []diff.Highlighter{diff.WithSoftTabs, diff.WithoutMissingContent}
 		}
 		if *showdiffcolor {
 			h = []diff.Highlighter{diff.WithSoftTabs, diff.WithColor}
@@ -42,10 +43,11 @@ func msgWithDiff(got, want interface{}) string {
 
 func stringify(v interface{}) string {
 	//TODO(pirmd): github.com/sanity-io/litter use strconv.Quote on each
-	//string, which is not what I usually look for so I bypass it for strings.
-	//Find something more sensible (using options?)
-	if s, ok := v.(string); ok {
-		return s
+	//string, which is not what I usually look for so I bypass it.
+	//Find something more sensible (forking litter and using options?)
+	s := litter.Sdump(v)
+	if u, err := strconv.Unquote(s); err == nil {
+		return u
 	}
-	return litter.Sdump(v)
+	return s
 }

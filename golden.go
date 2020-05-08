@@ -28,7 +28,7 @@ func MatchGolden(name string, got string) error {
 
 	want, err := readGolden(goldenPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot read golden file %s: %s.\nTest output is:\n%s", goldenPath, err, got)
 	}
 
 	if len(want) == 0 {

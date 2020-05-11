@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unrelease]
+### Added
+- Simple wrapper around testing.TB to allow plumbing testing log facilities to
+  an existing logger.
+
 ## [O.4.2] - 2020-05-08 
 ### Modified
 - FIX diff without color to show empty right text when an insertion is detected.

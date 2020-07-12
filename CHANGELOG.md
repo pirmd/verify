@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.5.0] - 2020.05.16
+## [0.5.1] - 2020-07-12
+### Added
+- Add fucniton to verify that a folder is empty
+
+## [0.5.0] - 2020-05-16
 ### Added
 - Simple wrapper around testing.TB to allow plumbing testing log facilities to
   an existing logger.

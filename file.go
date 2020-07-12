@@ -50,6 +50,20 @@ func DirHasContent(root string, tree []string) error {
 	return EqualSliceWithoutOrder(ls, tree)
 }
 
+// DirIsEmpty checks that a dir is empty.
+func DirIsEmpty(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err = f.Readdir(1); err != io.EOF {
+		return errors.New(path + " is not empty (but should be)")
+	}
+	return nil
+}
+
 // TestFolder represents a temporary folder where testing can happen
 type TestFolder struct {
 	Root string
@@ -197,6 +211,11 @@ func (tmp *TestFolder) ShouldNotHaveFile(wanted string) error {
 // to the wanted tree.
 func (tmp *TestFolder) ShouldHaveContent(wanted []string) error {
 	return DirHasContent(tmp.Root, wanted)
+}
+
+// ShouldBeEmpty verifies that the temporary test folder is empty.
+func (tmp *TestFolder) ShouldBeEmpty() error {
+	return DirIsEmpty(tmp.Root)
 }
 
 func lsDir(root string) (tree []string, err error) {

@@ -1,18 +1,27 @@
 package verify
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/mattetti/filebuffer"
 )
 
-// MockROFile returns a simple io.Reader to mock a read-only file
-func MockROFile(content string) io.Reader {
-	return bytes.NewBufferString(content)
+// MockReader is an interface that offers most of os.File reading operations.
+type MockReader interface {
+	io.Reader
+	io.ReaderAt
+	io.Seeker
+}
+
+// MockROFile returns a bytes.Buffer backed mock File that implements io.Reader,
+// io.Seeker, io.ReaderAt interfaces.
+func MockROFile(content string) MockReader {
+	return filebuffer.New([]byte(content))
 }
 
 // FileExists checks if provided path exists.

@@ -1,8 +1,12 @@
 # Changelog
 
+## [0.5.2] - 2020-11-29
+### Modified
+- Extend MockROFile to support io.ReaderAt and io.Seeker interfaces.
+
 ## [0.5.1] - 2020-07-12
 ### Added
-- Add fucniton to verify that a folder is empty
+- Add function to verify that a folder is empty
 
 ## [0.5.0] - 2020-05-16
 ### Added
@@ -17,9 +21,9 @@
 ## [0.4.1] - 2020-02-17
 ### Modified
 - FIX an unwanted behavior following introduction of
-  github.com/sanity-io/litter as stringifier wher all strings where quoted
-  using strconv.Quote. It is not the behavior I expecte in most cases, bipass it
-  as a short term wrokaround.
+  github.com/sanity-io/litter as stringifier where all strings where quoted
+  using strconv.Quote. It is not the behavior I expect in most cases, bypass it
+  as a short term workaround.
 
 ## [0.4.0] - 2020-02-16
 ### Modified

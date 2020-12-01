@@ -7,8 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/mattetti/filebuffer"
+	"strings"
 )
 
 // MockReader is an interface that offers most of os.File reading operations.
@@ -21,7 +20,7 @@ type MockReader interface {
 // MockROFile returns a bytes.Buffer backed mock File that implements io.Reader,
 // io.Seeker, io.ReaderAt interfaces.
 func MockROFile(content string) MockReader {
-	return filebuffer.New([]byte(content))
+	return strings.NewReader(content)
 }
 
 // FileExists checks if provided path exists.

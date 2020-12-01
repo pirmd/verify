@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.3] - 2020-12-01
+### Modified
+- Get rid of external dependency (github.com/mattetti/filebuffer).
+
 ## [0.5.2] - 2020-11-29
 ### Modified
 - Extend MockROFile to support io.ReaderAt and io.Seeker interfaces.

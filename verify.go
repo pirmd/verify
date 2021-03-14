@@ -3,9 +3,6 @@ package verify
 import (
 	"flag"
 	"fmt"
-	"strconv"
-
-	"github.com/sanity-io/litter"
 
 	"github.com/pirmd/text/diff"
 	"github.com/pirmd/text/table"
@@ -42,12 +39,5 @@ func msgWithDiff(got, want interface{}) string {
 }
 
 func stringify(v interface{}) string {
-	//TODO(pirmd): github.com/sanity-io/litter use strconv.Quote on each
-	//string, which is not what I usually look for so I bypass it.
-	//Find something more sensible (forking litter and using options?)
-	s := litter.Sdump(v)
-	if u, err := strconv.Unquote(s); err == nil {
-		return u
-	}
-	return s
+	return fmt.Sprint(v)
 }

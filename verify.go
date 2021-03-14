@@ -7,8 +7,8 @@ import (
 
 	"github.com/sanity-io/litter"
 
-	"github.com/pirmd/text"
 	"github.com/pirmd/text/diff"
+	"github.com/pirmd/text/table"
 )
 
 var (
@@ -35,7 +35,7 @@ func msgWithDiff(got, want interface{}) string {
 		}
 
 		dL, dR, dT, _ := delta.PrettyPrint(h...)
-		return text.NewTable().Col(dR, dT, dL).Captions("Got", "", "Want").Draw()
+		return table.New().AddCol(dR, dT, dL).SetHeader("Got", "", "Want").String()
 	}
 
 	return fmt.Sprintf("Got:\n%v\n\nWant :\n%v", g, w)

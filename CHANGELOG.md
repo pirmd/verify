@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.0] - 2021-03-14
+- Update dependencies to github.com/pirmd/text v0.6.0
+- Get rid of external dependency (github.com/sanity-io/litter).
+
 ## [0.5.3] - 2020-12-01
 ### Modified
 - Get rid of external dependency (github.com/mattetti/filebuffer).

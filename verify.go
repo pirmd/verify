@@ -28,6 +28,9 @@ func msgWithDiff(got, want interface{}) string {
 			h = []diff.Highlighter{diff.WithSoftTabs, diff.WithColor}
 		}
 		if *showdiffNP {
+			if !*showdiff && !*showdiffcolor {
+				h = []diff.Highlighter{diff.WithSoftTabs, diff.WithoutMissingContent}
+			}
 			h = append([]diff.Highlighter{diff.WithNonPrintable}, h...)
 		}
 

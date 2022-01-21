@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"testing"
 )
 
 // MockReader is an interface that offers most of os.File reading operations.
@@ -77,22 +77,12 @@ type TestFolder struct {
 	Root string
 }
 
-// NewTestFolder creates a temporary folder to host a test folder for tb.
-func NewTestFolder(name string) (*TestFolder, error) {
-	path, err := ioutil.TempDir("", name)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create temporary test folder: %v", err)
+// MustNewTestFolder creates a temporary folder to host a test folder for tb.
+// If creation fails, tb is terminated by calling tb.Fatal.
+func MustNewTestFolder(tb testing.TB) *TestFolder {
+	return &TestFolder{
+		Root: tb.TempDir(),
 	}
-
-	return &TestFolder{Root: path}, nil
-}
-
-// Clean removes the temporary test folders created for tb if it exists
-func (tmp *TestFolder) Clean() error {
-	if err := os.RemoveAll(tmp.Root); err != nil {
-		return fmt.Errorf("fail to remove temporary test folder %s: %v", tmp, err)
-	}
-	return nil
 }
 
 // Populate populates a temporary testing folders with the given tree The

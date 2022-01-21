@@ -5,9 +5,6 @@ import (
 	"testing"
 )
 
-// Package testlog is a log.Logger that proxies to the Log function on a
-// testing.TB
-
 type tbWriter struct {
 	testing.TB
 }

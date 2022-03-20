@@ -31,17 +31,13 @@ func MatchGolden(name string, got string) error {
 		return fmt.Errorf("cannot read golden file %s: %s.\nTest output is:\n%s", goldenPath, err, got)
 	}
 
-	if len(want) == 0 {
-		return fmt.Errorf("no existing or empty golden file.\nTest output is:\n%s", got)
-	}
-
 	return Equal(got, string(want))
 }
 
 func readGolden(path string) ([]byte, error) {
 	want, err := ioutil.ReadFile(path)
 	if err != nil {
-		return []byte{}, fmt.Errorf("cannot read golden file %s: %v", path, err)
+		return []byte{}, err
 	}
 	return want, nil
 }

@@ -217,7 +217,7 @@ func (tmp *TestFolder) ShouldBeEmpty() error {
 }
 
 func lsDir(root string) (tree []string, err error) {
-	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(root, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -225,6 +225,10 @@ func lsDir(root string) (tree []string, err error) {
 			return nil
 		}
 		relpath, _ := filepath.Rel(root, path) //Sure that we are not going to fail here
+        if fi.IsDir() {
+            relpath = relpath+string(os.PathSeparator)
+        }
+
 		tree = append(tree, relpath)
 		return nil
 	})

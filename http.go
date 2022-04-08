@@ -14,29 +14,31 @@ import (
 var (
 	// updateMockHTTP updates the http.Response files provided through MockHTTPResponse
 	updateMockHTTP = flag.Bool("test.mockhttp-update", false, "update files served through the mock http transport")
-	// where to find http.Response files
-	mockHTTPDir = flag.String("test.mockhttpdir", "./testdata", "path to folder hosting golden files")
 )
 
 // MockHTTPResponse represents a mock http transport for testing purpose. It
 // implements http.RoundTripper, which handles single http requests issued by a
 // http.Client.
 //
-// MockHTTPResponse returns the content of a file from provided path whose
-// filename is the requested url. If no file is found in path with requested
-// url as filename, an empty http.Response if no corresponding file exists.
+// MockHTTPResponse returns the content of a file from mockHTTPDir whose
+// filename is the requested url. If no file is found with requested url as
+// filename, an empty http.Response if no corresponding file exists.
 type MockHTTPResponse struct {
+	mockHTTPDir   string
 	origTransport http.RoundTripper
 }
 
-// NewMockHTTPResponse creates a new MockHTTPResponse.
-func NewMockHTTPResponse() *MockHTTPResponse {
-	return &MockHTTPResponse{}
+// NewMockHTTPResponse creates a new MockHTTPResponse returning content stored
+// in mockHTTPDir.
+func NewMockHTTPResponse(mockHTTPDir string) *MockHTTPResponse {
+	return &MockHTTPResponse{
+		mockHTTPDir: mockHTTPDir,
+	}
 }
 
 // StartMockHTTPResponse creates a new MockHTTPResponse and starts it.
-func StartMockHTTPResponse() *MockHTTPResponse {
-	m := NewMockHTTPResponse()
+func StartMockHTTPResponse(mockHTTPDir string) *MockHTTPResponse {
+	m := NewMockHTTPResponse(mockHTTPDir)
 	m.Start()
 	return m
 }
@@ -111,5 +113,5 @@ func (m *MockHTTPResponse) updateResponsesFiles(req *http.Request) error {
 }
 
 func (m *MockHTTPResponse) pathFor(req *http.Request) string {
-	return filepath.Join(*mockHTTPDir, req.URL.Host, req.URL.Path, req.URL.RawQuery+".http")
+	return filepath.Join(m.mockHTTPDir, req.URL.Host, req.URL.Path, req.URL.RawQuery+".http")
 }

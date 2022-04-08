@@ -225,9 +225,9 @@ func lsDir(root string) (tree []string, err error) {
 			return nil
 		}
 		relpath, _ := filepath.Rel(root, path) //Sure that we are not going to fail here
-        if fi.IsDir() {
-            relpath = relpath+string(os.PathSeparator)
-        }
+		if fi.IsDir() {
+			relpath = relpath + string(os.PathSeparator)
+		}
 
 		tree = append(tree, relpath)
 		return nil

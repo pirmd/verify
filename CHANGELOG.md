@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.0] - 2022-04-08 
+- Allow golden files and mocked HTTP responses locations to be accessed
+  and modified by end-user.
+
 ## [0.7.0] - 2022-03-20
 - Simplify files-related testing by taking benefit of new
   testing.T.TempDir()

@@ -9,16 +9,18 @@ import (
 )
 
 var (
-	// updateGolden golden files
+	//GoldenDir is the path where to find golden files
+	GoldenDir = "./testdata"
+
+	// updateGolden golden files, when set, updates the content of the golden
+	// files from th etest result.
 	updateGolden = flag.Bool("test.golden-update", false, "update golden file with test result")
-	// where to find golden files
-	goldenDir = flag.String("test.goldendir", "./testdata", "path to folder hosting golden files")
 )
 
 // MatchGolden compares a test result to the content of a 'golden' file
 // If 'update' command flag is used, update the 'golden' file
 func MatchGolden(name string, got string) error {
-	goldenPath := filepath.Join(*goldenDir, name+".golden")
+	goldenPath := filepath.Join(GoldenDir, name+".golden")
 
 	if *updateGolden {
 		if err := updateGoldenFiles(goldenPath, []byte(got)); err != nil {
